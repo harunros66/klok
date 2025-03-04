@@ -67,7 +67,15 @@ async function signMessageAndRegister(wallet, agent) {
 
 function getProxyAgent() {
   const proxies = fs.readFileSync(PROXY_FILE, 'utf-8').split('\n').filter(Boolean);
+  
+  // Check if there are any proxies available
+  if (proxies.length === 0) {
+    console.error("❌ Tidak ada proxy yang ditemukan dalam proxy.txt!");
+    process.exit(1);
+  }
+
   const randomProxy = proxies[Math.floor(Math.random() * proxies.length)].trim();
+  console.log(`📡 Menggunakan Proxy: ${randomProxy}`);
 
   // Determine if it's an HTTP/S or SOCKS proxy and create the appropriate agent
   if (randomProxy.startsWith('socks://')) {
@@ -78,10 +86,11 @@ function getProxyAgent() {
 }
 
 async function main() {
+  const agent = getProxyAgent(); // Get a random proxy agent first
+
   for (let i = 0; i < ACCOUNT_COUNT; i++) {
     const wallet = generateWallet();
-    const agent = getProxyAgent(); // Get a random proxy agent for each request
-    await signMessageAndRegister(wallet, agent);
+    await signMessageAndRegister(wallet, agent); // Use the agent for each request
   }
 }
 
